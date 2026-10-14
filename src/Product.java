@@ -3,16 +3,16 @@ public class Product implements ViewDetails{
     private String productName;
     private int quantity;
     private double price;
-    private int reoderLevel;
+    private int reorderLevel;
 
     @Override
     public void viewDetails() {
-        System.out.println(getDetails());
+        System.out.println("ID: " + productID + "\nName: " + productName + "\nQuantity: " + quantity + "\nPrice: " + price + "\nReorder Level: " + reorderLevel);
     }
 
-    public String getDetails() {
-        return "ID: " + productID + "\nName: " + productName + "\nQuantity: " + quantity + "\nPrice: " + price + "\nReoder Level: " + reoderLevel;
-    }
+//    public String getDetails() {
+//        return "ID: " + productID + "\nName: " + productName + "\nQuantity: " + quantity + "\nPrice: " + price + "\nReorder Level: " + reorderLevel;
+//    }
 
     public void addStock(int quantity) {
         this.quantity += quantity;
@@ -28,6 +28,6 @@ public class Product implements ViewDetails{
     }
 
     public boolean isLowStock() {
-        return this.quantity <= this.reoderLevel;
+        return this.quantity <= this.reorderLevel;
     }
 }
