@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class SystemAdmin extends User {
     private static final String DEFAULT_RESET_PASSWORD = "Reset123!";
 
@@ -31,53 +34,56 @@ public class SystemAdmin extends User {
 
     @Override
     public void displayMenu() {
+        String[] options = { "Create user account", "Remove user account", "Reset a user's password", "List users" };
         while (isLoggedIn()) {
-            System.out.println("\n=== System Admin Menu (" + username + ") ===");
-            System.out.println("1. Create user account");
-            System.out.println("2. Remove user account");
-            System.out.println("3. Reset a user's password");
-            System.out.println("4. List users");
-            System.out.println("0. Logout");
-            int choice = ConsoleInput.readInt("Choose: ", 0);
+            ConsoleUI.printMenu("SYSTEM ADMIN  -  " + username, options);
+            int choice = ConsoleInput.readInt("  Select an option: ", 0);
 
             try {
                 switch (choice) {
                     case 1: createUserFlow(); break;
                     case 2:
-                        removeUserAccount(ConsoleInput.readString("User ID to remove: "));
-                        System.out.println("Account removed.");
+                        removeUserAccount(ConsoleInput.readString("  User ID to remove: "));
+                        ConsoleUI.success("Account removed.");
                         break;
                     case 3:
-                        String temp = resetPassword(ConsoleInput.readString("User ID: "));
-                        System.out.println("Password reset. Temporary password: " + temp);
+                        String temp = resetPassword(ConsoleInput.readString("  User ID: "));
+                        ConsoleUI.success("Password reset. Temporary password: " + temp);
                         break;
-                    case 4:
-                        for (User u : ctx.getUserManager().getAllUsers()) u.viewDetails();
-                        break;
-                    case 0: logout(); System.out.println("Logged out."); break;
-                    default: System.out.println("Invalid option.");
+                    case 4: listUsers(); break;
+                    case 0: logout(); ConsoleUI.info("Logged out."); break;
+                    default: ConsoleUI.error("Invalid option.");
                 }
             } catch (IllegalArgumentException | IllegalStateException e) {
-                System.out.println("Error: " + e.getMessage());
+                ConsoleUI.error(e.getMessage());
             }
         }
     }
 
+    private void listUsers() {
+        List<String[]> rows = new ArrayList<>();
+        for (User u : ctx.getUserManager().getAllUsers()) {
+            rows.add(new String[] { u.getUserID(), u.getUsername(), u.getAccessLevel() });
+        }
+        ConsoleUI.printTable("USER ACCOUNTS", new String[] { "User ID", "Username", "Role" },
+                new int[] { 8, 18, 10 }, null, rows);
+    }
+
     private void createUserFlow() {
-        System.out.println("Role: 1. Inventory Clerk  2. Store Manager  3. System Admin");
-        int role = ConsoleInput.readInt("Choose role: ", 1);
-        String id = ConsoleInput.readString("User ID: ");
-        String name = ConsoleInput.readString("Username: ");
-        String pass = ConsoleInput.readString("Password: ");
+        ConsoleUI.printBox("SELECT ROLE", "[1] Inventory Clerk\n[2] Store Manager\n[3] System Admin");
+        int role = ConsoleInput.readInt("  Choose role: ", 1);
+        String id = ConsoleInput.readString("  User ID: ");
+        String name = ConsoleInput.readString("  Username: ");
+        String pass = ConsoleInput.readString("  Password: ");
 
         User u;
         switch (role) {
             case 1: u = new InventoryClerk(id, name, pass, ctx); break;
             case 2: u = new StoreManager(id, name, pass, ctx); break;
             case 3: u = new SystemAdmin(id, name, pass, ctx); break;
-            default: System.out.println("Invalid role."); return;
+            default: ConsoleUI.error("Invalid role."); return;
         }
         createUserAccount(u);
-        System.out.println("Account created.");
+        ConsoleUI.success("Account created.");
     }
 }

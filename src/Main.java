@@ -4,21 +4,22 @@ public class Main {
         StoreContext ctx = new StoreContext(10);   // order queue holds up to 10 waiting orders
         seedData(ctx);
 
-        System.out.println("=== Inventory Management System ===");
+        ConsoleUI.printBanner();
         while (true) {
-            String username = ConsoleInput.readString("\nUsername (or 'exit'): ");
+            ConsoleUI.printBox("LOGIN", "Enter your username and password.\nType 'exit' as the username to quit.");
+            String username = ConsoleInput.readString("  Username: ");
             if (username.equalsIgnoreCase("exit")) break;
-            String password = ConsoleInput.readString("Password: ");
+            String password = ConsoleInput.readString("  Password: ");
 
             User user = ctx.getUserManager().authenticate(username, password);
             if (user == null) {
-                System.out.println("Invalid username or password.");
+                ConsoleUI.error("Invalid username or password.");
                 continue;
             }
-            System.out.println("Welcome, " + user.getUsername() + "!");
+            ConsoleUI.success("Welcome, " + user.getUsername() + "!");
             user.displayMenu();   // returns when the user logs out
         }
-        System.out.println("Goodbye.");
+        ConsoleUI.info("Goodbye.");
     }
 
     /** Starter data so you can test immediately. Change or remove the default accounts before submitting. */

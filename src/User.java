@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class User implements ViewDetails {
@@ -51,27 +52,50 @@ public abstract class User implements ViewDetails {
     }
 
     // ----- shared console helpers for the role menus -----
-    protected void printProducts(List<Product> products) {
+    protected void printProducts(String title, List<Product> products) {
         if (products.isEmpty()) {
-            System.out.println("(no products)");
+            ConsoleUI.info("No products found.");
             return;
         }
-        System.out.printf("%-8s %-22s %6s %10s %8s%n", "ID", "Name", "Qty", "Price", "Reorder");
+        List<String[]> rows = new ArrayList<>();
         for (Product p : products) {
-            System.out.printf("%-8s %-22s %6d %10.2f %8d %s%n", p.getProductID(), p.getProductName(),
-                    p.getQuantity(), p.getPrice(), p.getReorderLevel(), p.isLowStock() ? "<- LOW" : "");
+            rows.add(new String[] { p.getProductID(), p.getProductName(), String.valueOf(p.getQuantity()),
+                    String.format("%.2f", p.getPrice()), String.valueOf(p.getReorderLevel()),
+                    p.isLowStock() ? "LOW" : "OK" });
         }
+        ConsoleUI.printTable(title,
+                new String[] { "ID", "Name", "Qty", "Price", "Reorder", "Status" },
+                new int[] { 6, 20, 5, 9, 7, 6 },
+                new boolean[] { false, false, true, true, true, false }, rows);
     }
 
     protected void printPendingOrders() {
         CustomerOrder[] pending = ctx.getOrderQueue().getPendingOrders();
         if (pending.length == 0) {
-            System.out.println("No pending customer orders.");
+            ConsoleUI.info("No pending customer orders.");
             return;
         }
-        System.out.println("Pending customer orders (front of queue first):");
+        List<String[]> rows = new ArrayList<>();
         for (int i = 0; i < pending.length; i++) {
-            System.out.println((i + 1) + ". " + pending[i].getSummary());
+            CustomerOrder o = pending[i];
+            rows.add(new String[] { String.valueOf(i + 1), o.getOrderID(), o.getCustomerName(),
+                    o.getProductID(), String.valueOf(o.getQuantity()), o.getStatus() });
         }
+        ConsoleUI.printTable("PENDING CUSTOMER ORDERS  (front of queue first)",
+                new String[] { "#", "Order ID", "Customer", "Product", "Qty", "Status" },
+                new int[] { 3, 8, 18, 8, 5, 9 },
+                new boolean[] { true, false, false, false, true, false }, rows);
+    }
+
+    protected void printRestockOrders(String title, List<Order> orders) {
+        List<String[]> rows = new ArrayList<>();
+        for (Order o : orders) {
+            rows.add(new String[] { o.getOrderID(), o.getProduct().getProductName(),
+                    String.valueOf(o.getQuantityOrdered()), o.getSupplier().getSupplierName(), o.getStatus() });
+        }
+        ConsoleUI.printTable(title,
+                new String[] { "Order ID", "Product", "Qty", "Supplier", "Status" },
+                new int[] { 8, 18, 5, 22, 9 },
+                new boolean[] { false, false, true, false, false }, rows);
     }
 }

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class InventoryClerk extends User {
@@ -65,117 +66,113 @@ public class InventoryClerk extends User {
 
     @Override
     public void displayMenu() {
+        String[] options = {
+                "Add product", "Edit product", "Search products", "View all products",
+                "View low-stock alerts", "Take customer order", "Process next customer order",
+                "View pending customer orders", "Request restock from supplier"
+        };
         while (isLoggedIn()) {
-            System.out.println("\n=== Inventory Clerk Menu (" + username + ") ===");
-            System.out.println("1. Add product");
-            System.out.println("2. Edit product");
-            System.out.println("3. Search products");
-            System.out.println("4. View all products");
-            System.out.println("5. View low-stock alerts");
-            System.out.println("6. Take customer order");
-            System.out.println("7. Process next customer order");
-            System.out.println("8. View pending customer orders");
-            System.out.println("9. Request restock from supplier");
-            System.out.println("0. Logout");
-            int choice = ConsoleInput.readInt("Choose: ", 0);
+            ConsoleUI.printMenu("INVENTORY CLERK  -  " + username, options);
+            int choice = ConsoleInput.readInt("  Select an option: ", 0);
 
             try {
                 switch (choice) {
                     case 1: addProductFlow(); break;
                     case 2: editProductFlow(); break;
                     case 3: searchFlow(); break;
-                    case 4: printProducts(ctx.getInventory().getAllProducts()); break;
+                    case 4: printProducts("ALL PRODUCTS", ctx.getInventory().getAllProducts()); break;
                     case 5: lowStockFlow(); break;
                     case 6: takeOrderFlow(); break;
                     case 7: processOrderFlow(); break;
                     case 8: printPendingOrders(); break;
                     case 9: restockFlow(); break;
-                    case 0: logout(); System.out.println("Logged out."); break;
-                    default: System.out.println("Invalid option.");
+                    case 0: logout(); ConsoleUI.info("Logged out."); break;
+                    default: ConsoleUI.error("Invalid option.");
                 }
             } catch (IllegalArgumentException | IllegalStateException e) {
-                System.out.println("Error: " + e.getMessage());
+                ConsoleUI.error(e.getMessage());
             }
         }
     }
 
     private void addProductFlow() {
-        String id = ConsoleInput.readString("Product ID: ");
-        String name = ConsoleInput.readString("Name: ");
-        int qty = ConsoleInput.readInt("Quantity: ", 0);
-        double price = ConsoleInput.readDouble("Price: ", 0);
-        int reorder = ConsoleInput.readInt("Reorder level: ", 0);
+        String id = ConsoleInput.readString("  Product ID: ");
+        String name = ConsoleInput.readString("  Name: ");
+        int qty = ConsoleInput.readInt("  Quantity: ", 0);
+        double price = ConsoleInput.readDouble("  Price: ", 0);
+        int reorder = ConsoleInput.readInt("  Reorder level: ", 0);
         if (addProduct(new Product(id, name, qty, price, reorder))) {
-            System.out.println("Product added.");
+            ConsoleUI.success("Product added.");
         } else {
-            System.out.println("A product with ID " + id + " already exists.");
+            ConsoleUI.error("A product with ID " + id + " already exists.");
         }
     }
 
     private void editProductFlow() {
-        String id = ConsoleInput.readString("Product ID to edit: ");
+        String id = ConsoleInput.readString("  Product ID to edit: ");
         Product p = ctx.getInventory().searchProduct(id);
         if (p == null) {
-            System.out.println("Product not found.");
+            ConsoleUI.error("Product not found.");
             return;
         }
-        p.viewDetails();
-        String name = ConsoleInput.readString("New name: ");
-        double price = ConsoleInput.readDouble("New price: ", 0);
-        int reorder = ConsoleInput.readInt("New reorder level: ", 0);
+        printProducts("CURRENT DETAILS", List.of(p));
+        String name = ConsoleInput.readString("  New name: ");
+        double price = ConsoleInput.readDouble("  New price: ", 0);
+        int reorder = ConsoleInput.readInt("  New reorder level: ", 0);
         editProduct(id, name, price, reorder);
-        System.out.println("Product updated.");
+        ConsoleUI.success("Product updated.");
     }
 
     private void searchFlow() {
-        String query = ConsoleInput.readString("Search (ID or name): ");
-        printProducts(ctx.getInventory().search(query));
+        String query = ConsoleInput.readString("  Search (ID or name): ");
+        printProducts("SEARCH RESULTS", ctx.getInventory().search(query));
     }
 
     private void lowStockFlow() {
         List<Product> low = viewLowStockAlerts();
-        if (low.isEmpty()) System.out.println("No low-stock products.");
-        else {
-            System.out.println("Low-stock products:");
-            printProducts(low);
-        }
+        if (low.isEmpty()) ConsoleUI.success("No low-stock products.");
+        else printProducts("LOW-STOCK ALERTS", low);
     }
 
     private void takeOrderFlow() {
-        String customer = ConsoleInput.readString("Customer name: ");
-        String productID = ConsoleInput.readString("Product ID: ");
-        int qty = ConsoleInput.readInt("Quantity: ", 1);
+        String customer = ConsoleInput.readString("  Customer name: ");
+        String productID = ConsoleInput.readString("  Product ID: ");
+        int qty = ConsoleInput.readInt("  Quantity: ", 1);
         CustomerOrder order = submitOrder(customer, productID, qty);
-        System.out.println("Order " + order.getOrderID() + " queued. Position in line: "
+        ConsoleUI.success("Order " + order.getOrderID() + " queued. Position in line: "
                 + ctx.getOrderQueue().size());
     }
 
     private void processOrderFlow() {
         CustomerOrder order = processNextOrder();
         if (order == null) {
-            System.out.println("No orders waiting.");
+            ConsoleUI.info("No orders waiting.");
             return;
         }
-        System.out.println("Processed: " + order.getSummary());
         if (OrderStatus.REJECTED.equals(order.getStatus())) {
-            System.out.println("Rejected: product not found or not enough stock.");
+            ConsoleUI.error(order.getOrderID() + " rejected: product not found or not enough stock.");
             return;
         }
+        ConsoleUI.success(order.getOrderID() + " completed for " + order.getCustomerName() + ".");
         Product p = ctx.getInventory().searchProduct(order.getProductID());
         if (p != null && p.isLowStock()) {
-            System.out.println("ALERT: " + p.getProductName() + " is low on stock (" + p.getQuantity() + " left).");
+            ConsoleUI.warn("ALERT: " + p.getProductName() + " is low on stock (" + p.getQuantity() + " left).");
         }
     }
 
     private void restockFlow() {
-        String productID = ConsoleInput.readString("Product ID to restock: ");
-        int qty = ConsoleInput.readInt("Quantity to order: ", 1);
-        System.out.println("Suppliers:");
+        String productID = ConsoleInput.readString("  Product ID to restock: ");
+        int qty = ConsoleInput.readInt("  Quantity to order: ", 1);
+
+        List<String[]> rows = new ArrayList<>();
         for (Supplier s : ctx.getSuppliers()) {
-            System.out.println("  " + s.getSupplierID() + " - " + s.getSupplierName());
+            rows.add(new String[] { s.getSupplierID(), s.getSupplierName(), s.getContactInfo() });
         }
-        String supplierID = ConsoleInput.readString("Supplier ID: ");
+        ConsoleUI.printTable("SUPPLIERS", new String[] { "ID", "Name", "Contact" },
+                new int[] { 6, 22, 24 }, null, rows);
+
+        String supplierID = ConsoleInput.readString("  Supplier ID: ");
         Order order = requestRestock(productID, qty, supplierID);
-        System.out.println("Restock order " + order.getOrderID() + " sent for manager approval.");
+        ConsoleUI.success("Restock order " + order.getOrderID() + " sent for manager approval.");
     }
 }
