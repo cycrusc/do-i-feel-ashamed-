@@ -1,7 +1,7 @@
 create database FinalProject;
 use FinalProject;
 
--- U
+--drop database FinalProject; -- incase of emergency
 
 create table ROLE_ (
 	Role_ID int identity(1,1) constraint PK_Role primary key,
@@ -13,11 +13,15 @@ create table SUPPLIER (
 	Supplier_ID int identity(1,1) constraint PK_Supplier primary key,
 	Supplier_Name varchar(50) not null,
 	Contact_Info varchar(100),
-	addresses varchar(100)
+	-- brokedown the multi-valued field
+	Barangay varchar(25) not null,
+    Municipality varchar(25) not null,
+    City varchar(25) not null
 );
 
 create table PRODUCT_ (
 	product_code varchar(50) constraint PK_Product primary key,
+    brand_name varchar(50), -- added brand name
 	product_name varchar(50) not null,
 	category varchar(50),
 	unit_price decimal(10,2) not null constraint CK_Product_Price check(Unit_Price >= 0)
@@ -26,7 +30,10 @@ create table PRODUCT_ (
 create table EMPLOYEE (
     employee_id int identity(1,1) constraint PK_Employee primary key,
     role_id int not null,
-    employee_name varchar(100) not null,
+    -- brokedown the multi-valued field
+    Fname varchar(25) not null,
+    Mname varchar(25),
+    Lname varchar(25) not null,
 
     constraint FK_Employee_Role foreign key (role_id) references ROLE_(role_id)
 );
@@ -55,7 +62,8 @@ create table SUPPLY_RECORD (
 create table DEALER (
     dealer_ID int identity(1,1) constraint PK_Dealer primary key,
     dealer_name varchar(100) not null,
-    contact_info varchar(100) null,
+    contact_number varchar(25),
+    email_address varchar(50) not null,
     sponsor_ID int null,   -- NULL = top-level dealer
 
     constraint FK_Dealer_Sponsor foreign key(sponsor_ID) references DEALER(dealer_ID),
@@ -88,4 +96,46 @@ create table ORDER_DETAIL (
     constraint FK_Detail_Product foreign key (product_code) references PRODUCT_(product_code)
 );
 
+
+
+-- U
+insert into PRODUCT_ (product_code, brand_name, product_name, category, unit_price)
+values
+    ('PRF-001', 'In The Mood', 'Lilac Fantasy', 'Perfume', 220.00),
+    ('PRF-002', 'In The Mood', 'Diamond Blush', 'Perfume', 220.00),
+    ('PRF-003', 'In The Mood', 'Arctic Aqua', 'Perfume', 220.00),
+    ('PRF-004', 'In The Mood', 'In The Mood', 'Perfume', 220.00),
+    ('PRF-005', 'Aspire', 'Desire', 'Perfume', 195.00),
+    ('PRF-006', 'Aspire', 'Elegance', 'Perfume', 195.00),
+    ('PRF-007', 'Aspire', 'Empower', 'Perfume', 195.00),
+    ('PRF-008', 'Aspire', 'Romance', 'Perfume', 195.00),
+    ('PRF-009', 'For Men', 'Cool', 'Perfume', 195.00),
+    ('PRF-010', 'For Men', 'Driven', 'Perfume', 195.00),
+    ('PRF-011', 'For Men', 'Edgy', 'Perfume', 195.00),
+    ('PRF-012', 'For Men', 'Fearless', 'Perfume', 195.00),
+    ('LNDRYSP-001', 'Sof & mmmmm', 'Eternity', 'Laundry Soap', 285.00),
+    ('LNDRYSP-002', 'Sof & mmmmm', 'Evermore', 'Laundry Soap', 285.00),
+    ('LNDRYSP-003', 'Sof & mmmmm', 'All Time Fresh', 'Laundry Soap', 285.00),
+    ('LNDRYSP-004', 'Sof & mmmmm', 'All Day Radiance', 'Laundry Soap', 285.00),
+    ('LNDRYSP-005', 'Sof & mmmmm', 'Ever After', 'Laundry Soap', 285.00),
+    ('LNDRYSP-006', 'Sof & mmmmm', 'Serenity', 'Laundry Soap', 285.00),
+    ('LNDRYSP-007', 'Sof & mmmmm', 'Naturals', 'Laundry Soap', 285.00),
+    ('LNDRYSP-008', 'Tuff', 'Mix & Wash', 'Laundry Soap', 189.00),
+    ('LNDRYSP-009', 'Tuff', 'Expert Clean', 'Laundry Soap', 189.00),
+    ('LNDRYSP-010', 'Tuff', 'Powermax White', 'Laundry Soap', 189.00),
+    ('LNDRYSP-011', 'Tuff', 'Fragrant Clean', 'Laundry Soap', 189.00);
+
 -- E
+
+
+
+
+select * from ROLE_;
+select * from SUPPLIER;
+select * from PRODUCT_;
+select * from EMPLOYEE;
+select * from INVENTORY;
+select * from SUPPLY_RECORD;
+select * from DEALER;
+select * from DEALER_ORDER;
+select * from ORDER_DETAIL;
