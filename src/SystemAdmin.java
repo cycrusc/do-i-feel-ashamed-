@@ -1,6 +1,3 @@
-import java.util.ArrayList;
-import java.util.List;
-
 public class SystemAdmin extends User {
     private static final String DEFAULT_RESET_PASSWORD = "Reset123!";
 
@@ -54,19 +51,21 @@ public class SystemAdmin extends User {
                     case 0: logout(); ConsoleUI.info("Logged out."); break;
                     default: ConsoleUI.error("Invalid option.");
                 }
-            } catch (IllegalArgumentException | IllegalStateException e) {
+            } catch (Exception e) {
                 ConsoleUI.error(e.getMessage());
             }
         }
     }
 
     private void listUsers() {
-        List<String[]> rows = new ArrayList<>();
+        ConsoleUI.printTop("USER ACCOUNTS");
+        System.out.printf(ConsoleUI.V + " %-10s %-28s %-18s " + ConsoleUI.V + "%n", "User ID", "Username", "Role");
+        ConsoleUI.printDivider();
         for (User u : ctx.getUserManager().getAllUsers()) {
-            rows.add(new String[] { u.getUserID(), u.getUsername(), u.getAccessLevel() });
+            System.out.printf(ConsoleUI.V + " %-10.10s %-28.28s %-18.18s " + ConsoleUI.V + "%n",
+                    u.getUserID(), u.getUsername(), u.getAccessLevel());
         }
-        ConsoleUI.printTable("USER ACCOUNTS", new String[] { "User ID", "Username", "Role" },
-                new int[] { 8, 18, 10 }, null, rows);
+        ConsoleUI.printBottom();
     }
 
     private void createUserFlow() {

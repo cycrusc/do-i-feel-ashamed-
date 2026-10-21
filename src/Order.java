@@ -1,14 +1,14 @@
-import java.time.LocalDate;
+import java.util.Date;
 
 /** A restock (purchase) order sent to a supplier. Flow: CREATED -> PENDING -> APPROVED -> COMPLETED (or REJECTED). */
 public class Order implements ViewDetails {
     private static int counter = 1;
 
-    private final String orderID;
-    private final Product product;
-    private final Supplier supplier;
-    private final int quantityOrdered;
-    private LocalDate orderDate;
+    private String orderID;
+    private Product product;
+    private Supplier supplier;
+    private int quantityOrdered;
+    private String orderDate;
     private String status = OrderStatus.CREATED;
 
     public Order(Product product, int quantityOrdered, Supplier supplier) {
@@ -25,12 +25,12 @@ public class Order implements ViewDetails {
     public Product getProduct()      { return product; }
     public Supplier getSupplier()    { return supplier; }
     public int getQuantityOrdered()  { return quantityOrdered; }
-    public LocalDate getOrderDate()  { return orderDate; }
+    public String getOrderDate()   { return orderDate; }
     public String getStatus()        { return status; }
 
     public void placeOrder() {
         requireStatus(OrderStatus.CREATED, "placed");
-        orderDate = LocalDate.now();
+        orderDate = new Date().toString();
         status = OrderStatus.PENDING;
     }
 

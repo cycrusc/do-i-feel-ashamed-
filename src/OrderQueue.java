@@ -12,7 +12,7 @@
  * A circular queue fixes this (see the notes in the build order).
  */
 public class OrderQueue {
-    private final CustomerOrder[] queue;
+    private CustomerOrder[] queue;
     private int front = -1;
     private int rear = -1;
 
@@ -30,7 +30,8 @@ public class OrderQueue {
     }
 
     public int size() {
-        return isEmpty() ? 0 : rear - front + 1;
+        if (isEmpty()) return 0;
+        return rear - front + 1;
     }
 
     public void enqueue(CustomerOrder order) {

@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.List;
 
 public class InventoryClerk extends User {
@@ -89,7 +88,7 @@ public class InventoryClerk extends User {
                     case 0: logout(); ConsoleUI.info("Logged out."); break;
                     default: ConsoleUI.error("Invalid option.");
                 }
-            } catch (IllegalArgumentException | IllegalStateException e) {
+            } catch (Exception e) {
                 ConsoleUI.error(e.getMessage());
             }
         }
@@ -115,7 +114,7 @@ public class InventoryClerk extends User {
             ConsoleUI.error("Product not found.");
             return;
         }
-        printProducts("CURRENT DETAILS", List.of(p));
+        ConsoleUI.printBox("CURRENT DETAILS", p.getDetails());
         String name = ConsoleInput.readString("  New name: ");
         double price = ConsoleInput.readDouble("  New price: ", 0);
         int reorder = ConsoleInput.readInt("  New reorder level: ", 0);
@@ -164,12 +163,14 @@ public class InventoryClerk extends User {
         String productID = ConsoleInput.readString("  Product ID to restock: ");
         int qty = ConsoleInput.readInt("  Quantity to order: ", 1);
 
-        List<String[]> rows = new ArrayList<>();
+        ConsoleUI.printTop("SUPPLIERS");
+        System.out.printf(ConsoleUI.V + " %-6s %-22s %-28s " + ConsoleUI.V + "%n", "ID", "Name", "Contact");
+        ConsoleUI.printDivider();
         for (Supplier s : ctx.getSuppliers()) {
-            rows.add(new String[] { s.getSupplierID(), s.getSupplierName(), s.getContactInfo() });
+            System.out.printf(ConsoleUI.V + " %-6.6s %-22.22s %-28.28s " + ConsoleUI.V + "%n",
+                    s.getSupplierID(), s.getSupplierName(), s.getContactInfo());
         }
-        ConsoleUI.printTable("SUPPLIERS", new String[] { "ID", "Name", "Contact" },
-                new int[] { 6, 22, 24 }, null, rows);
+        ConsoleUI.printBottom();
 
         String supplierID = ConsoleInput.readString("  Supplier ID: ");
         Order order = requestRestock(productID, qty, supplierID);

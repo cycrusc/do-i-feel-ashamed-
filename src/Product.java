@@ -1,14 +1,14 @@
 public class Product implements ViewDetails {
-    private final String productID;
+    private String productID;
     private String productName;
     private int quantity;
     private double price;
     private int reorderLevel;
 
     public Product(String productID, String productName, int quantity, double price, int reorderLevel) {
-        if (productID == null || productID.isBlank())
+        if (productID == null || productID.trim().isEmpty())
             throw new IllegalArgumentException("Product ID is required.");
-        if (productName == null || productName.isBlank())
+        if (productName == null || productName.trim().isEmpty())
             throw new IllegalArgumentException("Product name is required.");
         if (quantity < 0 || price < 0 || reorderLevel < 0)
             throw new IllegalArgumentException("Quantity, price and reorder level cannot be negative.");
@@ -27,7 +27,7 @@ public class Product implements ViewDetails {
     public int getReorderLevel()   { return reorderLevel; }
 
     public void setProductName(String productName) {
-        if (productName == null || productName.isBlank())
+        if (productName == null || productName.trim().isEmpty())
             throw new IllegalArgumentException("Product name is required.");
         this.productName = productName.trim();
     }

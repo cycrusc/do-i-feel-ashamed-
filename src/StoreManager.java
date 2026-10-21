@@ -1,3 +1,4 @@
+import java.util.Date;
 import java.util.List;
 
 public class StoreManager extends User implements Report {
@@ -30,6 +31,7 @@ public class StoreManager extends User implements Report {
         StringBuilder sb = new StringBuilder();
         switch (reportType.trim().toUpperCase()) {
             case "INVENTORY": {
+                sb.append("Generated: ").append(new Date().toString()).append('\n');
                 List<Product> all = ctx.getInventory().getAllProducts();
                 int units = 0;
                 double value = 0;
@@ -44,6 +46,7 @@ public class StoreManager extends User implements Report {
                 break;
             }
             case "ORDERS": {
+                sb.append("Generated: ").append(new Date().toString()).append('\n');
                 int completed = 0, rejected = 0;
                 for (CustomerOrder o : ctx.getProcessedOrders()) {
                     if (OrderStatus.COMPLETED.equals(o.getStatus())) completed++;
@@ -91,7 +94,7 @@ public class StoreManager extends User implements Report {
                     case 0: logout(); ConsoleUI.info("Logged out."); break;
                     default: ConsoleUI.error("Invalid option.");
                 }
-            } catch (IllegalArgumentException | IllegalStateException e) {
+            } catch (Exception e) {
                 ConsoleUI.error(e.getMessage());
             }
         }

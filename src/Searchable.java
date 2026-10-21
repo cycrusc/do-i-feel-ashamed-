@@ -1,5 +1,5 @@
 import java.util.List;
 
-public interface Searchable<T> {
-    List<T> search(String query);
+public interface Searchable {
+    List<Product> search(String query);
 }

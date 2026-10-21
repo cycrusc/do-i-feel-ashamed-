@@ -1,8 +1,8 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class Inventory implements Searchable<Product> {
-    private final List<Product> productList = new ArrayList<>();
+public class Inventory implements Searchable {
+    private List<Product> productList = new ArrayList<>();
 
     /** Returns false if the product is null or its ID already exists. */
     public boolean addProduct(Product p) {
@@ -40,7 +40,7 @@ public class Inventory implements Searchable<Product> {
     @Override
     public List<Product> search(String query) {
         List<Product> results = new ArrayList<>();
-        if (query == null || query.isBlank()) return results;
+        if (query == null || query.trim().isEmpty()) return results;
         String q = query.trim().toLowerCase();
         for (Product p : productList) {
             if (p.getProductID().toLowerCase().contains(q)
