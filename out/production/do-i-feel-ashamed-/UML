@@ -1,0 +1,115 @@
+@startuml
+
+' --- INTERFACES ---
+interface Searchable <<interface>> {
+    + search(query: String) : List<Object>
+}
+
+interface Report <<interface>> {
+    + report(report: String) : String
+}
+
+interface viewDetails <<interface>> {
+    + viewDetails() : void
+}
+
+' --- CLASSES ---
+abstract class User {
+    # userID : String
+    # username : String
+    - password : String
+    # accessLevel : String
+    --
+    + login(username: String, password: String) : boolean
+    + logout() : void
+    + {abstract} displayMenu() : void
+}
+
+class InventoryClerk {
+    + addProduct(p: Product) : void
+    + editProduct(p: Product) : void
+    + viewLowStockAlerts() : void
+}
+
+class StoreManager {
+    + deleteProduct(productID: String) : void
+    + approveOrder(o: Order) : void
+    + viewReports() : void
+}
+
+class SystemAdmin {
+    + createUserAccount(u: User) : void
+    + removeUserAccount(userID: String) : void
+    + resetPassword(userID: String) : void
+}
+
+class Product {
+    - productID : String
+    - productName : String
+    - quantity : int
+    - price : double
+    - reorderLevel : int
+    --
+    + addStock(qty: int) : void
+    + reduceStock(qty: int) : void
+    + isLowStock() : boolean
+    + getDetails() : String
+}
+
+class Inventory {
+    - productList : List<Product>
+    --
+    + addProduct(p: Product) : void
+    + editProduct(productID: String) : void
+    + deleteProduct(productID: String) : void
+    + searchProduct(productID: String) : Product
+    + checkLowStock() : List<Product>
+    + search(query: String) : List<Object>
+}
+
+class Supplier {
+    - supplierID : String
+    - supplierName : String
+    - contactInfo : String
+    --
+    + fulfillOrder(o: Order) : void
+}
+
+class Order {
+    - orderID : String
+    - quantityOrdered : int
+    - orderDate : String
+    - status : String
+    --
+    + placeOrder() : void
+    + completeOrder() : void
+}
+
+' --- RELATIONSHIPS ---
+
+' Interface Implementation (Realization)
+Searchable <|.. Inventory
+Report <|.. InventoryClerk
+Report <|.. StoreManager
+Report <|.. SystemAdmin
+viewDetails <|.. InventoryClerk
+viewDetails <|.. StoreManager
+viewDetails <|.. SystemAdmin
+viewDetails <|.. Product
+viewDetails <|.. Order
+viewDetails <|.. Supplier
+
+' Inheritance (Generalization)
+User <|-- InventoryClerk
+User <|-- StoreManager
+User <|-- SystemAdmin
+
+' Association
+Inventory "1" -- "0.." Product
+
+' Dependency
+InventoryClerk ..> Inventory
+StoreManager ..> Order
+Supplier ..> Order
+
+@enduml
