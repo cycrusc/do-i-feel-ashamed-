@@ -413,6 +413,8 @@ select * from ORDER_DETAIL;
 -- ---------------------------------------------------------------------
 -- REPORT 1: Product Catalog Summary by Category
 -- Purpose : How many products each category has and its price range.
+-- Importance: this query helps the business understand the number of products in each
+-- category and compare their prices for better inventory planning and pricing decisions.
 -- ---------------------------------------------------------------------
 select  Category,
         count(*) as Total_Products_Per_Category,
@@ -427,6 +429,8 @@ order by Total_Products_Per_Category desc, category desc;
 -- ---------------------------------------------------------------------
 -- REPORT 2: Low-Stock Alert (Reorder List)
 -- Purpose : Products the Inventory Clerk should restock (20 units or less).
+-- Importance: this query helps the inventory clerk identify products that need restocking
+-- to prevent shortages and ensure product availability.
 -- ---------------------------------------------------------------------
 select  p.Product_Code,
         p.Product_Name,
@@ -441,6 +445,8 @@ order by i.Stock_Quantity, p.Product_Code;
 -- ---------------------------------------------------------------------
 -- REPORT 3: Inventory Value by Category (with grand total)
 -- Purpose : Total units and peso value of stock held per category.
+-- Importance: this query helps the business monitor the total value of its inventory
+-- and determine which categories hold the most stock value.
 -- ---------------------------------------------------------------------
 select  isnull(p.Category, 'GRAND TOTAL') as Category,
         sum(i.Stock_Quantity) as Total_Units,
@@ -454,6 +460,8 @@ order by grouping(p.Category), Total_Stock_Value desc;
 -- ---------------------------------------------------------------------
 -- REPORT 4: Sales by Product
 -- Purpose : Units sold, number of orders and revenue for each product sold.
+-- Importance: this query helps the business identify best-selling products and
+-- evaluate product performance based on sales volume and revenue.
 -- ---------------------------------------------------------------------
 select  p.Product_Code,
         p.Product_Name,
@@ -469,6 +477,8 @@ order by Revenue desc, p.Product_Code;
 -- ---------------------------------------------------------------------
 -- REPORT 5: Sales by Category (with grand total)
 -- Purpose : Which product categories generate the most revenue.
+-- Importance: this query helps the business determine which product categories
+-- generate the most revenue and make better sales and marketing decisions.
 -- ---------------------------------------------------------------------
 select  isnull(p.Category, 'GRAND TOTAL') as Category,
         SUM(od.Quantity) as Units_Sold,
@@ -482,6 +492,8 @@ order by grouping(p.Category), Revenue desc;
 -- ---------------------------------------------------------------------
 -- REPORT 6: Payment Method Summary
 -- Purpose : Number of orders and amount collected per payment method.
+-- Importance: this query helps the business track payments received through
+-- different payment methods and monitor collected amounts and unpaid orders.
 -- ---------------------------------------------------------------------
 select  isnull(Payment_Method, 'Unpaid') as Payment_Method,
         count(*) as Orders,
