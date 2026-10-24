@@ -23,16 +23,46 @@ public class Main {
     }
 
     /** Starter data so you can test immediately. Change or remove the default accounts before submitting. */
+
     private static void seedData(StoreContext ctx) {
-        ctx.getInventory().addProduct(new Product("P001", "Notebook", 50, 35.00, 10));
-        ctx.getInventory().addProduct(new Product("P002", "Ballpen", 8, 12.50, 15));   // starts low on stock
-        ctx.getInventory().addProduct(new Product("P003", "Stapler", 20, 89.00, 5));
 
-        ctx.getSuppliers().add(new Supplier("S001", "Metro Office Supply", "metro@example.com"));
-        ctx.getSuppliers().add(new Supplier("S002", "Luzon Paper Co.", "luzonpaper@example.com"));
+        // PERFUME PRODUCTS - IN THE MOOD (₱220)
+        ctx.getInventory().addProduct(
+                new Product("P001", "In The Mood - Lilac Fantasy", 20, 220.00, 5));
+        ctx.getInventory().addProduct(
+                new Product("P002", "In The Mood - Diamond Blush", 20, 220.00, 5));
+        ctx.getInventory().addProduct(
+                new Product("P003", "In The Mood - Arctic Aqua", 20, 220.00, 5));
 
-        ctx.getUserManager().addUser(new SystemAdmin("U001", "admin", "admin123", ctx));
-        ctx.getUserManager().addUser(new InventoryClerk("U002", "clerk1", "clerk123", ctx));
-        ctx.getUserManager().addUser(new StoreManager("U003", "manager1", "manager123", ctx));
+        // PERFUME PRODUCTS - SOF & MMMM (₱285)
+        ctx.getInventory().addProduct(
+                new Product("P004", "Sof & Mmmm - Eternity", 20, 285.00, 5));
+        ctx.getInventory().addProduct(
+                new Product("P005", "Sof & Mmmm - Evermore", 20, 285.00, 5));
+        ctx.getInventory().addProduct(
+                new Product("P006", "Sof & Mmmm - All Time Fresh", 20, 285.00, 5));
+        ctx.getInventory().addProduct(
+                new Product("P007", "Sof & Mmmm - All Day Radiance", 20, 285.00, 5));
+        ctx.getInventory().addProduct(
+                new Product("P008", "Sof & Mmmm - Ever After", 20, 285.00, 5));
+        ctx.getInventory().addProduct(
+                new Product("P009", "Sof & Mmmm - Serenity", 20, 285.00, 5));
+        ctx.getInventory().addProduct(
+                new Product("P010", "Sof & Mmmm - Naturals", 20, 285.00, 5));
+
+        // SUPPLIERS
+        ctx.getSuppliers().add(
+                new Supplier("S001", "3M Compound", "3mcompound@example.com"));
+        ctx.getSuppliers().add(
+                new Supplier("S002", "2B Compound", "2bcompound@example.com"));
+
+        // USER ACCOUNTS
+        ctx.getUserManager().addUser(
+                new SystemAdmin("U001", "admin", "admin123", ctx));
+        ctx.getUserManager().addUser(
+                new InventoryClerk("U002", "clerk1", "clerk123", ctx));
+        ctx.getUserManager().addUser(
+                new StoreManager("U003", "manager1", "manager123", ctx));
     }
+
 }
