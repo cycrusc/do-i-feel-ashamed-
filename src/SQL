@@ -3,108 +3,175 @@ use FinalProject;
 
 --drop database FinalProject; -- incase of emergency
 
+
 create table ROLE_ (
-	Role_ID int identity(1,1) constraint PK_Role primary key,
+	Role_ID int identity(1001,1) constraint PK_Role primary key,
 	Role_Name varchar(50) not null constraint UQ_Role_Name unique,
-	Descriptions varchar(100)
+	Descriptions varchar(100) not null
 );
 
 create table SUPPLIER (
-	Supplier_ID int identity(1,1) constraint PK_Supplier primary key,
-	Supplier_Name varchar(50) not null,
+	Supplier_ID int identity(1001,1) constraint PK_Supplier primary key,
+	Warehouse_Name varchar(50) not null,
 	Contact_Info varchar(100),
-	-- brokedown the multi-valued field
 	Barangay varchar(25) not null,
     Municipality varchar(25) not null,
     City varchar(25) not null
 );
 
 create table PRODUCT_ (
-	product_code varchar(50) constraint PK_Product primary key,
-    brand_name varchar(50), -- added brand name
-	product_name varchar(50) not null,
-	category varchar(50),
-	unit_price decimal(10,2) not null constraint CK_Product_Price check(Unit_Price >= 0)
+	Product_Code varchar(50) constraint PK_Product primary key,
+    Brand_Name varchar(50) not null,
+	Product_Name varchar(50) not null,
+	Category varchar(50),
+	Unit_Price decimal(10,2) not null constraint CK_Product_Price check(Unit_Price > 0)
 );
 
 create table EMPLOYEE (
-    employee_id int identity(1,1) constraint PK_Employee primary key,
-    role_id int not null,
-    -- brokedown the multi-valued field
-    Fname varchar(25) not null,
-    Mname varchar(25),
-    Lname varchar(25) not null,
+    Employee_ID int identity(1001,1) constraint PK_Employee primary key,
+    Role_ID int not null,
+    First_Name varchar(30) not null,
+    Middle_Name varchar(30),
+    Last_Name varchar(30) not null,
 
-    constraint FK_Employee_Role foreign key (role_id) references ROLE_(role_id)
+    constraint FK_Employee_Role foreign key (Role_ID) references ROLE_(Role_ID)
 );
 
 create table INVENTORY (
-    inventory_id int identity(1,1) constraint PK_Inventory primary key,
-    product_code varchar(50) not null,
-    stock_quantity int not null constraint DF_Inventory_Stock default 0 constraint CK_Inventory_Stock check(stock_quantity >= 0),
+    Inventory_ID int identity(1001,1) constraint PK_Inventory primary key,
+    Product_Code varchar(50) not null,
+    Stock_Quantity int not null constraint DF_Inventory_Stock default 0 constraint CK_Inventory_Stock check(Stock_Quantity >= 0),
 
-    constraint FK_Inventory_Product foreign key(product_code) references PRODUCT_(product_code)
+    constraint FK_Inventory_Product foreign key(Product_Code) references PRODUCT_(Product_Code)
 );
 
 create table SUPPLY_RECORD (
-    supply_id int identity(1,1) constraint PK_SupplyRecord primary key,
-    supplier_id int not null,
-    product_code varchar(50) not null,
-    order_date date NOT NULL constraint DF_Supply_Date default getdate(),
-    quantity_supplied int not null constraint CK_Supply_Qty check(quantity_supplied > 0),
-    unit_cost decimal(10,2) not null constraint CK_Supply_Cost check(unit_cost >= 0),
+    Supply_ID int identity(1001,1) constraint PK_SupplyRecord primary key,
+    Supplier_ID int not null,
+    Product_Code varchar(50) not null,
+    Order_Date date not null constraint DF_Supply_Date default getdate(),
+    Quantity_Supplied int not null constraint CK_Supply_Qty check(Quantity_Supplied > 0),
+    Unit_Cost decimal(10,2) not null constraint CK_Supply_Cost check(Unit_Cost > 0),
 
-    constraint FK_Supply_Supplier foreign key(supplier_id)  references SUPPLIER(supplier_id),
-    constraint FK_Supply_Product foreign key(product_code) references PRODUCT_(product_code)
+    constraint FK_Supply_Supplier foreign key(Supplier_ID) references SUPPLIER(Supplier_ID),
+    constraint FK_Supply_Product foreign key(Product_Code) references PRODUCT_(Product_Code)
 );
 
 
 create table DEALER (
-    dealer_ID int identity(1,1) constraint PK_Dealer primary key,
-    dealer_name varchar(100) not null,
-    contact_number varchar(25),
-    email_address varchar(50) not null,
-    sponsor_ID int null,   -- NULL = top-level dealer
+    Dealer_ID int identity(1001,1) constraint PK_Dealer primary key,
+    First_Name varchar(30) not null,
+    Middle_Name varchar(30),
+    Last_Name varchar(30) not null,
+    Contact_No varchar(30) null,
+    Email_Address varchar(30) not null,
+    Sponsor_ID int null,   -- NULL = top-level dealer
 
-    constraint FK_Dealer_Sponsor foreign key(sponsor_ID) references DEALER(dealer_ID),
-    constraint CK_Dealer_NoSelfSponsor check(sponsor_ID <> dealer_ID)
+    constraint FK_Dealer_Sponsor foreign key(Sponsor_ID) references DEALER(Dealer_ID),
+    constraint CK_Dealer_NoSelfSponsor check(Sponsor_ID <> Dealer_ID)
 );
 
 
 create table DEALER_ORDER (
-    Order_id int identity(1,1) constraint PK_DealerOrder primary key,
-    Dealer_id int not null,
-    employee_id int not null,
-    Order_date date not null constraint DF_Order_Date default getdate(),
-    payment_method  varchar(30) null,
-    payment_date date not null,      -- NULL = not yet paid
-    amount_paid decimal(12,2) null constraint CK_Order_Amount check(amount_paid >= 0),
-
-    constraint FK_Order_Dealer foreign key (Dealer_id) references DEALER(dealer_ID),
-    constraint FK_Order_Employee foreign key (employee_id) references EMPLOYEE(employee_id),
-    constraint CK_Order_PayDate check (payment_date is null or payment_date >= Order_date)
+    Order_ID int identity(1001,1) constraint PK_DealerOrder primary key,
+    Dealer_ID int not null,
+    Employee_ID int not null,
+    Order_Date date not null constraint DF_Order_Date default getdate(),
+    Payment_Method varchar(30) null,
+    Payment_Date date null,      -- NULL = not yet paid
+    Amount_Paid decimal(12,2) null constraint CK_Order_Amount check(Amount_Paid >= 0),
+    constraint FK_Order_Dealer foreign key (Dealer_ID) references DEALER(Dealer_ID),
+    constraint FK_Order_Employee foreign key (Employee_ID) references EMPLOYEE(Employee_ID),
+    constraint CK_Order_PaymentMethod check (Payment_Method IN ('Cash', 'GCash', 'Bank Transfer')),
+    constraint CK_Order_PayDate check (Payment_Date is null or Payment_Date >= Order_Date)
 );
 
 
 create table ORDER_DETAIL (
-    Order_id int not null,
-    product_code varchar(50) not null,
-    quantity int not null constraint CK_Detail_Qty check (quantity > 0),
+    Order_ID int not null,
+    Product_Code varchar(50) not null,
+    Quantity int not null constraint CK_Detail_Qty check (Quantity > 0),
 
-    constraint PK_OrderDetail primary key(Order_id, product_code),  -- composite key
-    constraint FK_Detail_Order foreign key (Order_id) references DEALER_ORDER(Order_id),
-    constraint FK_Detail_Product foreign key (product_code) references PRODUCT_(product_code)
+    constraint PK_OrderDetail primary key(Order_ID, Product_Code),  -- composite key
+    constraint FK_Detail_Order foreign key (Order_ID) references DEALER_ORDER(Order_ID),
+    constraint FK_Detail_Product foreign key (Product_Code) references PRODUCT_(Product_Code)
 );
 
 
 
--- U
-insert into PRODUCT_ (product_code, brand_name, product_name, category, unit_price)
+-- ROLE RECORDS S
+insert into ROLE_ (Role_Name, Descriptions)
+values ('Branch Manager', 'Oversees daily branch operations')
+
+insert into ROLE_ (Role_Name, Descriptions)
+values ('Inventory Clerk', 'Monitor Stocks')
+
+insert into ROLE_ (Role_Name, Descriptions)
+values ('Invoicing Clerk', 'Processes Orders')
+
+
+--EMPLOYEE RECORDS S
+--Branch Manager
+insert into EMPLOYEE (Role_ID, First_Name, Middle_Name, Last_Name)
+values ('1001', 'John Mark', 'Santos', 'Cruz');
+--Inventory Clerk
+insert into EMPLOYEE (Role_ID, First_Name, Middle_Name, Last_Name)
+values ('1002', 'Maria Cristina', 'Reyes', 'Dela Cruz');
+
+insert into EMPLOYEE (Role_ID, First_Name, Middle_Name, Last_Name)
+values ('1002', 'Joshua', 'Garcia', 'Mendoza');
+
+insert into EMPLOYEE (Role_ID, First_Name, Middle_Name, Last_Name)
+values ('1003', 'Angelica', 'Ramos', 'Gonzales');
+--IQ
+insert into EMPLOYEE (Role_ID, First_Name, Middle_Name, Last_Name)
+values ('1003', 'Louie', 'James', 'Padilla');
+
+insert into EMPLOYEE (Role_ID, First_Name, Middle_Name, Last_Name)
+values ('1003', 'Cyrus James', 'James', 'Mercado');
+
+
+--DEALER RECORDS S
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Princess', 'Flores', 'Villanueva', '09930951243', 'princess@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Christian Dave', 'Aquino', 'Aquino', '09171234567', 'Cdave123@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Patricia Ann', 'Mercado', 'Ramos', '09189876543', 'AnnPat67@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Samantha Mae', 'Tolentino', 'Navarro', '09174829103', 'SamanthaMae32@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Kevin Paul', 'Soriano', 'Dizon', '09283719485', 'KevinPaul19@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Bea Bianca', 'Valenzuela', 'Corpuz', '09351029481', 'BeaBianca84@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Adrian Karl', 'Manalo', 'Sarmiento', '09087612349', 'AdrianKarl55@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Kristine Joy', 'Pineda', 'Villanueva', '09568392014', 'KristineJoy41@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Justin Ryan', 'Evangelista', 'Pascual', '09192837465', 'JustinRyan08@gmail.com', null);
+
+insert into DEALER (First_Name, Middle_Name, Last_Name, Contact_No, Email_Address, Sponsor_ID)
+values ('Althea Rose', 'Santiago', 'Delos Santos', '09459012837', 'AltheaRose23@gmail.com', null);
+
+
+--PRODUCT RECORDS
+insert into PRODUCT_ (Product_Code, Brand_Name, Product_Name, Category, Unit_Price)
 values
+    --in the mood
     ('PRF-001', 'In The Mood', 'Lilac Fantasy', 'Perfume', 220.00),
     ('PRF-002', 'In The Mood', 'Diamond Blush', 'Perfume', 220.00),
     ('PRF-003', 'In The Mood', 'Arctic Aqua', 'Perfume', 220.00),
     ('PRF-004', 'In The Mood', 'In The Mood', 'Perfume', 220.00),
+    --Aspire
     ('PRF-005', 'Aspire', 'Desire', 'Perfume', 195.00),
     ('PRF-006', 'Aspire', 'Elegance', 'Perfume', 195.00),
     ('PRF-007', 'Aspire', 'Empower', 'Perfume', 195.00),
@@ -113,23 +180,226 @@ values
     ('PRF-010', 'For Men', 'Driven', 'Perfume', 195.00),
     ('PRF-011', 'For Men', 'Edgy', 'Perfume', 195.00),
     ('PRF-012', 'For Men', 'Fearless', 'Perfume', 195.00),
-    ('LNDRYSP-001', 'Sof & mmmmm', 'Eternity', 'Laundry Soap', 285.00),
-    ('LNDRYSP-002', 'Sof & mmmmm', 'Evermore', 'Laundry Soap', 285.00),
-    ('LNDRYSP-003', 'Sof & mmmmm', 'All Time Fresh', 'Laundry Soap', 285.00),
-    ('LNDRYSP-004', 'Sof & mmmmm', 'All Day Radiance', 'Laundry Soap', 285.00),
-    ('LNDRYSP-005', 'Sof & mmmmm', 'Ever After', 'Laundry Soap', 285.00),
-    ('LNDRYSP-006', 'Sof & mmmmm', 'Serenity', 'Laundry Soap', 285.00),
-    ('LNDRYSP-007', 'Sof & mmmmm', 'Naturals', 'Laundry Soap', 285.00),
-    ('LNDRYSP-008', 'Tuff', 'Mix & Wash', 'Laundry Soap', 189.00),
-    ('LNDRYSP-009', 'Tuff', 'Expert Clean', 'Laundry Soap', 189.00),
-    ('LNDRYSP-010', 'Tuff', 'Powermax White', 'Laundry Soap', 189.00),
-    ('LNDRYSP-011', 'Tuff', 'Fragrant Clean', 'Laundry Soap', 189.00);
+    --Sof & mmmmm
+    ('FBRCND-001', 'Sof & mmmmm', 'Eternity', 'Fabric Conditioner', 285.00),
+    ('FBRCND-002', 'Sof & mmmmm', 'Evermore', 'Fabric Conditioner', 285.00),
+    ('FBRCND-003', 'Sof & mmmmm', 'All Time Fresh', 'Fabric Conditioner', 285.00),
+    ('FBRCND-004', 'Sof & mmmmm', 'All Day Radiance', 'Fabric Conditioner', 285.00),
+    ('FBRCND-005', 'Sof & mmmmm', 'Ever After', 'Fabric Conditioner', 285.00),
+    ('FBRCND-006', 'Sof & mmmmm', 'Serenity', 'Fabric Conditioner', 285.00),
+    ('FBRCND-007', 'Sof & mmmmm', 'Naturals', 'Fabric Conditioner', 285.00),
+    --Tuff Powder Laundry
+    ('LNDRYSP-001', 'Tuff Powder Laundry', 'Mix & Wash', 'Laundry Soap', 189.00),
+    ('LNDRYSP-002', 'Tuff Powder Laundry', 'Expert Clean', 'Laundry Soap', 189.00),
+    ('LNDRYSP-003', 'Tuff Powder Laundry', 'Powermax White', 'Laundry Soap', 189.00),
+    ('LNDRYSP-004', 'Tuff Powder Laundry', 'Fragrant Clean', 'Laundry Soap', 189.00),
+    --Tuff Germban
+    ('DIS-001', 'Tuff Germban', 'Lemon Zest', 'Disinfectant / Air Freshener / Deodorizer', 249.00),
+    ('DIS-002', 'Tuff Germban', 'Sakura Bloom', 'Disinfectant / Air Freshener / Deodorizer', 249.00),
+    ('DIS-003', 'Tuff Germban', 'Linen Fresh', 'Disinfectant / Air Freshener / Deodorizer', 249.00),
+    --Tuff TBc
+    ('TBC-001', 'Tuff TBC', 'Tuff TBC', 'Toilet Bowl Cleaner', 249.00),
+    --Target Multi Insect Killer
+    ('INS-001', 'Target Multi Insect Killer', 'Target Multi Insect Killer', 'Insect Killer', 224.00);
 
+
+--PRODUCT RECORDS 2
+insert into PRODUCT_ (Product_Code, Brand_Name, Product_Name, Category, Unit_Price)
+values
+    -- In The Mood Lipstick
+    ('LIP-001', 'In The Mood', 'Ruby Slay', 'Lipstick', 234.00),
+    ('LIP-002', 'In The Mood', 'Cherry on Top', 'Lipstick', 234.00),
+    ('LIP-003', 'In The Mood', 'Berry Burst', 'Lipstick', 234.00),
+    ('LIP-004', 'In The Mood', 'Pinch Perfect', 'Lipstick', 234.00),
+    ('LIP-005', 'In The Mood', 'Juicy Peach', 'Lipstick', 234.00),
+    ('LIP-006', 'In The Mood', 'Ember', 'Lipstick', 234.00),
+    ('LIP-007', 'In The Mood', 'Espresso', 'Lipstick', 234.00),
+    ('LIP-008', 'In The Mood', 'Yas Queen Red', 'Lipstick', 234.00),
+    ('LIP-009', 'In The Mood', 'Blushing', 'Lipstick', 234.00),
+    ('LIP-010', 'In The Mood', 'Toasted', 'Lipstick', 234.00),
+
+    -- Check Antibacterial Soap
+    ('SOAP-001', 'Check Antibacterial Soap', 'Winter Fresh', 'Soap', 60.00),
+    ('SOAP-002', 'Check Antibacterial Soap', 'Clear & Fresh', 'Soap', 60.00),
+    ('SOAP-003', 'Check Antibacterial Soap', 'Whitening Fresh', 'Soap', 60.00),
+
+    -- Femi Care Feminine Wash
+    ('FEM-001', 'Femi Care', 'Powder Bloom', 'Feminine Wash', 130.00),
+    ('FEM-002', 'Femi Care', 'Tender Floral', 'Feminine Wash', 130.00),
+    ('FEM-003', 'Femi Care', 'Milk Extract', 'Feminine Wash', 130.00),
+
+    -- Herbs & Beauty Hand & Body Lotion
+    ('HBL-001', 'Herbs & Beauty Hand & Body Lotion', 'Enchanted Spell', 'Hand & Body Lotion', 155.00),
+    ('HBL-002', 'Herbs & Beauty Hand & Body Lotion', 'Passion Bloom', 'Hand & Body Lotion', 155.00),
+    ('HBL-003', 'Herbs & Beauty Hand & Body Lotion', 'Joyful Bliss', 'Hand & Body Lotion', 155.00),
+
+    -- Herbs & Beauty Shampoo
+    ('SHP-001', 'Herbs & Beauty Shampoo', 'Blooming Bouquet', 'Shampoo', 160.00),
+    ('SHP-002', 'Herbs & Beauty Shampoo', 'Sweet Fantasy', 'Shampoo', 160.00),
+
+    -- Alert Toothpaste
+    ('TP-001', 'Alert Toothpaste', 'Icy Blue', 'Toothpaste', 140.00),
+    ('TP-002', 'Alert Toothpaste', 'Cool Green', 'Toothpaste', 140.00),
+    ('TP-003', 'Alert Toothpaste', 'Fiery Red', 'Toothpaste', 140.00),
+    ('TP-004', 'Alert Toothpaste', 'Optimum', 'Toothpaste', 140.00);
+
+
+-- DEALER_ORDER RECORDS
+insert into DEALER_ORDER (Dealer_ID, Employee_ID, Order_Date, Payment_Method, Payment_Date, Amount_Paid)
+values
+    (1001, 1005, '2026-10-01', 'Cash', '2026-10-01', 440.00),
+    (1002, 1006, '2026-10-02', 'GCash', '2026-10-02', 390.00),
+    (1003, 1005, '2026-10-03', 'Bank Transfer', '2026-10-04', 570.00),
+    (1004, 1006, '2026-10-04', 'Cash', '2026-10-04', 285.00),
+    (1005, 1005, '2026-10-05', 'GCash', '2026-10-05', 498.00),
+    (1006, 1006, '2026-10-06', null, null, null),
+    (1007, 1005, '2026-10-07', 'Cash', '2026-10-08', 195.00),
+    (1008, 1006, '2026-10-08', 'GCash', '2026-10-08', 468.00),
+    (1009, 1005, '2026-10-09', null, null, null),
+    (1010, 1006, '2026-10-10', 'Bank Transfer', '2026-10-10', 675.00);
+
+
+-- ORDER_DETAIL RECORDS S
+insert into ORDER_DETAIL (Order_ID, Product_Code, Quantity)
+values
+    -- Order 1001: Amount paid = 440.00
+    (1001, 'PRF-001', 2),
+
+    -- Order 1002: Amount paid = 390.00
+    (1002, 'PRF-005', 2),
+
+    -- Order 1003: Amount paid = 570.00
+    (1003, 'FBRCND-001', 2),
+
+    -- Order 1004: Amount paid = 285.00
+    (1004, 'FBRCND-001', 1),
+
+    -- Order 1005: Amount paid = 498.00
+    (1005, 'DIS-001', 2),
+
+    -- Order 1006: Unpaid
+    (1006, 'SOAP-001', 2),
+
+    -- Order 1007: Amount paid = 195.00
+    (1007, 'PRF-005', 1),
+
+    -- Order 1008: Amount paid = 468.00
+    (1008, 'LIP-001', 2),
+
+    -- Order 1009: Unpaid
+    (1009, 'TP-001', 1),
+
+    -- Order 1010: Amount paid = 675.00
+    (1010, 'FBRCND-001', 1),
+    (1010, 'PRF-005', 2);
+
+
+-- INVENTORY RECORDS
+insert into INVENTORY (Product_Code, Stock_Quantity)
+values
+    ('PRF-001', 50),
+    ('PRF-002', 45),
+    ('PRF-003', 38),
+    ('PRF-004', 42),
+    ('PRF-005', 35),
+    ('PRF-006', 30),
+    ('PRF-007', 28),
+    ('PRF-008', 32),
+    ('PRF-009', 25),
+    ('PRF-010', 20),
+    ('PRF-011', 18),
+    ('PRF-012', 22),
+
+    -- Fabric Conditioner
+    ('FBRCND-001', 40),
+    ('FBRCND-002', 35),
+    ('FBRCND-003', 30),
+    ('FBRCND-004', 28),
+    ('FBRCND-005', 32),
+    ('FBRCND-006', 25),
+    ('FBRCND-007', 20),
+
+    -- Laundry Soap
+    ('LNDRYSP-001', 60),
+    ('LNDRYSP-002', 55),
+    ('LNDRYSP-003', 45),
+    ('LNDRYSP-004', 40),
+
+    -- Tuff Germban
+    ('DIS-001', 35),
+    ('DIS-002', 30),
+    ('DIS-003', 25),
+
+    -- Toilet Bowl Cleaner and Insect Killer
+    ('TBC-001', 32),
+    ('INS-001', 28),
+
+    -- In The Mood Lipstick
+    ('LIP-001', 20),
+    ('LIP-002', 18),
+    ('LIP-003', 22),
+    ('LIP-004', 15),
+    ('LIP-005', 20),
+    ('LIP-006', 16),
+    ('LIP-007', 18),
+    ('LIP-008', 25),
+    ('LIP-009', 17),
+    ('LIP-010', 15),
+
+    -- Check Antibacterial Soap
+    ('SOAP-001', 40),
+    ('SOAP-002', 35),
+    ('SOAP-003', 30),
+
+    -- Femi Care Feminine Wash
+    ('FEM-001', 25),
+    ('FEM-002', 22),
+    ('FEM-003', 20),
+
+    -- Herbs & Beauty Hand & Body Lotion
+    ('HBL-001', 30),
+    ('HBL-002', 25),
+    ('HBL-003', 28),
+
+    -- Herbs & Beauty Shampoo
+    ('SHP-001', 24),
+    ('SHP-002', 20),
+
+    -- Alert Toothpaste
+    ('TP-001', 35),
+    ('TP-002', 30),
+    ('TP-003', 25),
+    ('TP-004', 20);
+
+
+-- SUPPLIER RECORDS S
+insert into SUPPLIER (Warehouse_Name, Contact_Info, Barangay, Municipality, City)
+values
+    ('3M Compound', '3mcompound@gmail.com', 'Ibayo', 'Marilao', 'Bulacan'),
+    ('5C Compound', '5ccompound@gmail.com', 'Punta', 'Calamba', 'Laguna');
 -- E
 
+-- SUPPLY_RECORD RECORDS S
+insert into SUPPLY_RECORD (Supplier_ID, Product_Code, Order_Date, Quantity_Supplied, Unit_Cost)
+values
+    -- 3M Compound
+    (1001, 'PRF-001', '2026-09-25', 100, 150.00),
+    (1001, 'PRF-005', '2026-09-26', 80, 135.00),
+    (1001, 'FBRCND-001', '2026-09-27', 60, 200.00),
+    (1001, 'LNDRYSP-001', '2026-09-28', 100, 140.00),
+    (1001, 'DIS-001', '2026-09-29', 50, 175.00),
+
+    -- 5C Compound
+    (1002, 'LIP-001', '2026-09-30', 70, 160.00),
+    (1002, 'SOAP-001', '2026-10-01', 100, 40.00),
+    (1002, 'FEM-001', '2026-10-02', 60, 85.00),
+    (1002, 'SHP-001', '2026-10-03', 50, 110.00),
+    (1002, 'TP-001', '2026-10-04', 80, 95.00);
 
 
 
+-- REPORTS
+-- VIEW ALL TABLES
 select * from ROLE_;
 select * from SUPPLIER;
 select * from PRODUCT_;
@@ -139,3 +409,83 @@ select * from SUPPLY_RECORD;
 select * from DEALER;
 select * from DEALER_ORDER;
 select * from ORDER_DETAIL;
+
+-- ---------------------------------------------------------------------
+-- REPORT 1: Product Catalog Summary by Category
+-- Purpose : How many products each category has and its price range.
+-- ---------------------------------------------------------------------
+select  Category,
+        count(*) as Total_Products_Per_Category,
+        min(Unit_Price) as Lowest_Price,
+        max(Unit_Price) as Highest_Price,
+        cast(avg(Unit_Price) as decimal(10,2)) as Average_Price
+from PRODUCT_
+group by Category
+order by Total_Products_Per_Category desc, category desc;
+
+
+-- ---------------------------------------------------------------------
+-- REPORT 2: Low-Stock Alert (Reorder List)
+-- Purpose : Products the Inventory Clerk should restock (20 units or less).
+-- ---------------------------------------------------------------------
+select  p.Product_Code,
+        p.Product_Name,
+        p.Category,
+        i.Stock_Quantity,
+        20 - i.Stock_Quantity as Units_Below_Target
+from INVENTORY as i JOIN PRODUCT_ as p
+on p.Product_Code = i.Product_Code
+where i.Stock_Quantity <= 20
+order by i.Stock_Quantity, p.Product_Code;
+
+-- ---------------------------------------------------------------------
+-- REPORT 3: Inventory Value by Category (with grand total)
+-- Purpose : Total units and peso value of stock held per category.
+-- ---------------------------------------------------------------------
+select  isnull(p.Category, 'GRAND TOTAL') as Category,
+        sum(i.Stock_Quantity) as Total_Units,
+        sum(i.Stock_Quantity * p.Unit_Price) as Total_Stock_Value
+from INVENTORY as i join PRODUCT_ as p
+on p.Product_Code = i.Product_Code
+group by rollup(p.Category)
+order by grouping(p.Category), Total_Stock_Value desc;
+
+
+-- ---------------------------------------------------------------------
+-- REPORT 4: Sales by Product
+-- Purpose : Units sold, number of orders and revenue for each product sold.
+-- ---------------------------------------------------------------------
+select  p.Product_Code,
+        p.Product_Name,
+        p.Category,
+        count(distinct od.Order_ID) as Orders_Containing,
+        sum(od.Quantity) as Units_Sold,
+        sum(od.Quantity * p.Unit_Price) as Revenue
+from ORDER_DETAIL as od join PRODUCT_ as p
+ON p.Product_Code = od.Product_Code
+group by p.Product_Code, p.Product_Name, p.Category
+order by Revenue desc, p.Product_Code;
+
+-- ---------------------------------------------------------------------
+-- REPORT 5: Sales by Category (with grand total)
+-- Purpose : Which product categories generate the most revenue.
+-- ---------------------------------------------------------------------
+select  isnull(p.Category, 'GRAND TOTAL') as Category,
+        SUM(od.Quantity) as Units_Sold,
+        SUM(od.Quantity * p.Unit_Price) as Revenue
+from ORDER_DETAIL as od join PRODUCT_ as p
+on p.Product_Code = od.Product_Code
+group by rollup(p.Category)
+order by grouping(p.Category), Revenue desc;
+
+
+-- ---------------------------------------------------------------------
+-- REPORT 6: Payment Method Summary
+-- Purpose : Number of orders and amount collected per payment method.
+-- ---------------------------------------------------------------------
+select  isnull(Payment_Method, 'Unpaid') as Payment_Method,
+        count(*) as Orders,
+        isnull(sum(Amount_Paid), 0) as Amount_Collected
+from DEALER_ORDER
+group by Payment_Method
+order by Amount_Collected desc;
